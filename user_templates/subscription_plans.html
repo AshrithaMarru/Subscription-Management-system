@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Plans</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: #f8f9fb;
+      color: #1a1a1a;
+    }
+
+    /* Fixed Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 250px;
+      background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+      border-right: 1px solid #374151;
+      height: 100vh;
+      padding: 24px 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin: 0 0 8px;
+      color: #f9fafb;
+      font-weight: 600;
+    }
+
+    .sidebar p {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+    }
+
+    .nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav li {
+      margin-bottom: 8px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #d1d5db;
+      font-size: 15px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav a:hover {
+      background: rgba(75, 85, 99, 0.5);
+      color: #f9fafb;
+      transform: translateX(2px);
+    }
+
+    .nav a.active {
+      background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+      color: #ffffff;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .nav a.active::before {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 24px;
+      background: #60a5fa;
+      border-radius: 2px;
+    }
+
+    .nav svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    /* Main content with left margin to account for fixed sidebar */
+    .main {
+      margin-left: 250px;
+      padding: 32px;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    .header {
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin: 0 0 12px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1f2937, #4b5563);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 18px;
+      color: #6b7280;
+      margin: 0;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .current-plan-banner {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 32px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .current-plan-banner h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .current-plan-banner p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .billing-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin: 32px 0;
+      background: white;
+      padding: 8px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      width: fit-content;
+      margin: 32px auto;
+    }
+
+    .billing-toggle label {
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .billing-toggle input[type="radio"] {
+      display: none;
+    }
+
+    .billing-toggle input[type="radio"]:checked + label {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .savings-badge {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 8px;
+    }
+
+    .plans-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .plan-card {
+      background: white;
+      border-radius: 20px;
+      padding: 32px 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      position: relative;
+      border: 2px solid transparent;
+    }
+
+    .plan-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+
+    .plan-card.popular {
+      border: 2px solid #3b82f6;
+      transform: scale(1.05);
+    }
+
+    .plan-card.popular::before {
+      content: 'Most Popular';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      padding: 6px 20px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .plan-card.current {
+      background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+      border: 2px solid #0ea5e9;
+    }
+
+    .plan-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .plan-name {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: #1f2937;
+    }
+
+    .plan-description {
+      color: #6b7280;
+      font-size: 14px;
+      margin: 0 0 20px;
+    }
+
+    .plan-price {
+      font-size: 48px;
+      font-weight: 800;
+      color: #1f2937;
+      margin: 0;
+      line-height: 1;
+    }
+
+    .plan-price .currency {
+      font-size: 24px;
+      vertical-align: super;
+    }
+
+    .plan-period {
+      color: #6b7280;
+      font-size: 14px;
+      margin: 8px 0 0;
+    }
+
+    .original-price {
+      text-decoration: line-through;
+      color: #9ca3af;
+      font-size: 18px;
+      font-weight: 400;
+      margin-right: 8px;
+    }
+
+    .plan-features {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0;
+    }
+
+    .plan-features li {
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .plan-features li::before {
+      content: '✓';
+      color: #10b981;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .plan-features li.unavailable {
+      color: #9ca3af;
+    }
+
+    .plan-features li.unavailable::before {
+      content: '✗';
+      color: #ef4444;
+    }
+
+    .plan-button {
+      width: 100%;
+      padding: 16px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .plan-button.primary {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .plan-button.primary:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+    }
+
+    .plan-button.secondary {
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      color: #374151;
+      border: 2px solid #e5e7eb;
+    }
+
+    .plan-button.secondary:hover {
+      background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+      border-color: #d1d5db;
+    }
+
+    .plan-button.current {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      cursor: default;
+    }
+
+    .plan-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .features-comparison {
+      margin: 48px 0;
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .features-comparison h3 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0 0 32px;
+      color: #1f2937;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 16px;
+      text-align: center;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .comparison-table th {
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      font-weight: 600;
+      color: #374151;
+    }
+
+    .comparison-table tr:hover {
+      background: #f8fafc;
+    }
+
+    .feature-name {
+      text-align: left !important;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    .check-mark {
+      color: #10b981;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .x-mark {
+      color: #ef4444;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .value-mark {
+      color: #3b82f6;
+      font-weight: 600;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    .processing {
+      animation: pulse 1s infinite;
+      pointer-events: none;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 32px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+    }
+
+    .modal h3 {
+      margin: 0 0 16px;
+      color: #1f2937;
+      font-size: 24px;
+    }
+
+    .modal p {
+      color: #6b7280;
+      margin-bottom: 24px;
+      white-space: pre-line;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .modal-buttons button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .modal-buttons .confirm {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+    }
+
+    .modal-buttons .cancel {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #f3f4f6;
+      border-top: 2px solid #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 20px;
+      }
+
+      .mobile-menu-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        display: none;
+      }
+
+      .mobile-menu-btn svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+      }
+
+      @media (max-width: 768px) {
+        .mobile-menu-btn {
+          display: block;
+        }
+        
+        .header {
+          margin-top: 60px;
+        }
+      }
+
+      .plans-container {
+        grid-template-columns: 1fr;
+      }
+
+      .plan-card.popular {
+        transform: none;
+      }
+
+      .comparison-table {
+        font-size: 14px;
+      }
+
+      .comparison-table th,
+      .comparison-table td {
+        padding: 12px 8px;
+      }
+    }
+
+    /* Mobile overlay */
+    @media (max-width: 768px) {
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+      }
+
+      .sidebar.mobile-open + .sidebar-overlay {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Mobile Menu Button -->
+  <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+    <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+    </svg>
+  </button>
+
+  <!-- Fixed Sidebar -->
+  <div class="sidebar">
+    <h2>User Panel</h2>
+    <p>Manage your subscription</p>
+    <ul class="nav">
+      <li>
+        <a href="dashboard.html">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 6h18M3 18h18"></path>
+          </svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="subscription_plans.html" class="active">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V7a2 2 0 0 0-2-2h-4V3H10v2H6a2 2 0 0 0-2 2v6m16 0H4m16 0v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"></path>
+          </svg>
+          Subscription Plans
+        </a>
+      </li>
+      <li>
+        <a href="billing.html">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 14h6m-6-4h6m-7 8h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"></path>
+          </svg>
+          Billing History
+        </a>
+      </li>
+      <li>
+        <a href="payments.html">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a5 5 0 0 0-10 0v2m-4 4h18l-1 9H4l-1-9z"></path>
+          </svg>
+          Payment Methods
+        </a>
+      </li>
+      <li>
+        <a href="account_settings.html">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          Account Settings
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Sidebar Overlay for Mobile -->
+  <div class="sidebar-overlay" onclick="closeMobileMenu()"></div>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="header">
+      <h1>Choose Your Plan</h1>
+      <p>Select the perfect plan for your needs. Upgrade or downgrade at any time.</p>
+    </div>
+
+    <div class="current-plan-banner">
+      <h3>🎉 Currently on Professional Plan</h3>
+      <p>Your plan renews on December 15, 2024 • Next billing: $29.99</p>
+    </div>
+
+    <div class="billing-toggle">
+      <input type="radio" id="monthly" name="billing" value="monthly" checked>
+      <label for="monthly">Monthly</label>
+      
+      <input type="radio" id="yearly" name="billing" value="yearly">
+      <label for="yearly">Yearly <span class="savings-badge">Save 20%</span></label>
+    </div>
+
+    <div class="plans-container" id="plansContainer">
+      <!-- Plans will be dynamically generated -->
+    </div>
+
+    <div class="features-comparison">
+      <h3>Feature Comparison</h3>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th class="feature-name">Feature</th>
+            <th>Basic</th>
+            <th>Professional</th>
+            <th>Enterprise</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feature-name">Monthly Projects</td>
+            <td class="value-mark">5</td>
+            <td class="value-mark">25</td>
+            <td class="value-mark">Unlimited</td>
+          </tr>
+          <tr>
+            <td class="feature-name">Storage Space</td>
+            <td class="value-mark">5GB</td>
+            <td class="value-mark">100GB</td>
+            <td class="value-mark">1TB</td>
+          </tr>
+          <tr>
+            <td class="feature-name">Team Members</td>
+            <td class="value-mark">1</td>
+            <td class="value-mark">5</td>
+            <td class="value-mark">50</td>
+          </tr>
+          <tr>
+            <td class="feature-name">24/7 Support</td>
+            <td class="x-mark">✗</td>
+            <td class="check-mark">✓</td>
+            <td class="check-mark">✓</td>
+          </tr>
+          <tr>
+            <td class="feature-name">Advanced Analytics</td>
+            <td class="x-mark">✗</td>
+            <td class="check-mark">✓</td>
+            <td class="check-mark">✓</td>
+          </tr>
+          <tr>
+            <td class="feature-name">API Access</td>
+            <td class="x-mark">✗</td>
+            <td class="x-mark">✗</td>
+            <td class="check-mark">✓</td>
+          </tr>
+          <tr>
+            <td class="feature-name">Custom Integrations</td>
+            <td class="x-mark">✗</td>
+            <td class="x-mark">✗</td>
+            <td class="check-mark">✓</td>
+          </tr>
+          <tr>
+            <td class="feature-name">Priority Support</td>
+            <td class="x-mark">✗</td>
+            <td class="x-mark">✗</td>
+            <td class="check-mark">✓</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal" id="confirmModal">
+    <div class="modal-content">
+      <h3>Confirm Plan Change</h3>
+      <p id="modalMessage"></p>
+      <div class="modal-buttons">
+        <button class="confirm" onclick="confirmPlanChange()">Confirm</button>
+        <button class="cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentPlan = 'Professional';
+    let currentBilling = 'monthly';
+    let pendingPlan = null;
+    let pendingBilling = null;
+
+    // Base plan data with monthly prices
+    const basePlans = {
+      Basic: {
+        monthlyPrice: 9.99,
+        description: 'Perfect for getting started',
+        features: [
+          '5 Monthly Projects',
+          '5GB Storage',
+          '1 Team Member',
+          'Basic Support',
+          'Standard Templates'
+        ],
+        unavailableFeatures: [
+          '24/7 Support',
+          'Advanced Analytics',
+          'API Access'
+        ]
+      },
+      Professional: {
+        monthlyPrice: 29.99,
+        description: 'Best for growing businesses',
+        features: [
+          '25 Monthly Projects',
+          '100GB Storage',
+          '5 Team Members',
+          '24/7 Support',
+          'Advanced Analytics',
+          'Premium Templates',
+          'Priority Queue'
+        ],
+        unavailableFeatures: [
+          'API Access',
+          'Custom Integrations'
+        ],
+        popular: true
+      },
+      Enterprise: {
+        monthlyPrice: 99.99,
+        description: 'For large organizations',
+        features: [
+          'Unlimited Projects',
+          '1TB Storage',
+          '50 Team Members',
+          'Priority Support',
+          'Advanced Analytics',
+          'API Access',
+          'Custom Integrations',
+          'Dedicated Manager',
+          'SLA Guarantee'
+        ],
+        unavailableFeatures: []
+      }
+    };
+
+    // Mobile menu functions
+    function toggleMobileMenu() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.toggle('mobile-open');
+    }
+
+    function closeMobileMenu() {
+      const sidebar = document.querySelector('.sidebar');
+      sidebar.classList.remove('mobile-open');
+    }
+
+    // Calculate pricing based on billing period
+    function calculatePricing(billing) {
+      const plansData = {};
+      
+      Object.entries(basePlans).forEach(([planName, planData]) => {
+        if (billing === 'monthly') {
+          plansData[planName] = {
+            ...planData,
+            price: planData.monthlyPrice,
+            originalPrice: null
+          };
+        } else { // yearly
+          const yearlyOriginal = planData.monthlyPrice * 12;
+          const yearlyDiscounted = yearlyOriginal * 0.8; // 20% discount
+          plansData[planName] = {
+            ...planData,
+            price: yearlyDiscounted,
+            originalPrice: yearlyOriginal
+          };
+        }
+      });
+      
+      return plansData;
+    }
+
+    // Render plan cards
+    function renderPlans() {
+      const container = document.getElementById('plansContainer');
+      const billing = document.querySelector('input[name="billing"]:checked').value;
+      const plans = calculatePricing(billing);
+      
+      container.innerHTML = '';
+      
+      Object.entries(plans).forEach(([planName, planData]) => {
+        const isCurrentPlan = planName === currentPlan && billing === currentBilling;
+        const planCard = document.createElement('div');
+        planCard.className = `plan-card ${planData.popular ? 'popular' : ''} ${isCurrentPlan ? 'current' : ''}`;
+        
+        let priceDisplay = `${planData.price.toFixed(2)}`;
+        if (billing === 'yearly' && planData.originalPrice) {
+          priceDisplay = `<span class="original-price">$${planData.originalPrice.toFixed(2)}</span>${planData.price.toFixed(2)}`;
+        }
+        
+        const period = billing === 'yearly' ? '/year' : '/month';
+        
+        const featuresHTML = planData.features.map(feature => 
+          `<li>${feature}</li>`
+        ).join('');
+        
+        const unavailableFeaturesHTML = planData.unavailableFeatures.map(feature => 
+          `<li class="unavailable">${feature}</li>`
+        ).join('');
+        
+        let buttonHTML;
+        if (isCurrentPlan) {
+          buttonHTML = `<button class="plan-button current">Current Plan</button>`;
+        } else {
+          const isPrimary = planData.popular;
+          buttonHTML = `<button class="plan-button ${isPrimary ? 'primary' : 'secondary'}" 
+                         onclick="selectPlan('${planName}', '${billing}')">
+                         ${planName === 'Enterprise' ? 'Contact Sales' : 'Choose Plan'}
+                       </button>`;
+        }
+        
+        planCard.innerHTML = `
+          <div class="plan-header">
+            <h2 class="plan-name">${planName}</h2>
+            <p class="plan-description">${planData.description}</p>
+            <div class="plan-price">
+              <span class="currency">$</span>${priceDisplay}
+            </div>
+            <p class="plan-period">${period}</p>
+          </div>
+          <ul class="plan-features">
+            ${featuresHTML}
+            ${unavailableFeaturesHTML}
+          </ul>
+          ${buttonHTML}
+        `;
+        
+        container.appendChild(planCard);
+      });
+    }
+
+    // Select a plan
+    function selectPlan(planName, billing) {
+      if (planName === 'Enterprise') {
+        // Handle enterprise contact sales
+        showNotification('Thank you for your interest in Enterprise! Our sales team will contact you within 24 hours.', 'info');
+        return;
+      }
+
+      pendingPlan = planName;
+      pendingBilling = billing;
+      
+      const plans = calculatePricing(billing);
+      const planData = plans[planName];
+      const period = billing === 'yearly' ? 'annually' : 'monthly';
+      const price = billing === 'yearly' ? `${planData.price.toFixed(2)}/year` : `${planData.price.toFixed(2)}/month`;
+      
+      let message = `Are you sure you want to switch to ${planName} plan?\n\n`;
+      message += `You'll be charged ${price} ${period}.`;
+      
+      if (billing === 'yearly' && planData.originalPrice) {
+        const savings = ((planData.originalPrice - planData.price) / planData.originalPrice * 100).toFixed(0);
+        message += `\n\nYou'll save ${savings}% with yearly billing!`;
+      }
+      
+      if (planName === 'Basic' && currentPlan !== 'Basic') {
+        message += '\n\nNote: Downgrading may result in loss of some features and data.';
+      }
+      
+      document.getElementById('modalMessage').textContent = message;
+      document.getElementById('confirmModal').classList.add('show');
+    }
+
+    // Confirm plan change
+    function confirmPlanChange() {
+      const buttons = document.querySelectorAll('.plan-button');
+      const targetButton = Array.from(buttons).find(btn => 
+        btn.textContent.includes('Choose Plan') && 
+        btn.onclick && 
+        btn.onclick.toString().includes(pendingPlan)
+      );
+      
+      if (targetButton) {
+        targetButton.classList.add('processing');
+        targetButton.innerHTML = '<span class="spinner"></span>Processing...';
+        targetButton.disabled = true;
+      }
+      
+      closeModal();
+      
+      // Simulate API call
+      setTimeout(() => {
+        currentPlan = pendingPlan;
+        currentBilling = pendingBilling;
+        
+        // Update current plan banner
+        const banner = document.querySelector('.current-plan-banner h3');
+        banner.textContent = `🎉 Currently on ${currentPlan} Plan`;
+        
+        const bannerP = document.querySelector('.current-plan-banner p');
+        const plans = calculatePricing(currentBilling);
+        const planData = plans[currentPlan];
+        const nextBilling = currentBilling === 'yearly' ? 'December 15, 2025' : 'January 15, 2025';
+        bannerP.textContent = `Your plan renews on ${nextBilling} • Next billing: ${planData.price.toFixed(2)}`;
+        
+        // Update billing toggle if needed
+        const billingRadio = document.querySelector(`input[value="${currentBilling}"]`);
+        if (billingRadio) {
+          billingRadio.checked = true;
+        }
+        
+        renderPlans();
+        
+        // Show success message
+        showNotification(`Successfully switched to ${currentPlan} plan!`, 'success');
+        
+        pendingPlan = null;
+        pendingBilling = null;
+      }, 2000);
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('confirmModal').classList.remove('show');
+    }
+
+    // Show notification
+    function showNotification(message, type = 'info') {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        z-index: 10000;
+        font-weight: 600;
+        max-width: 400px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+      `;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Slide in
+      setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+      }, 100);
+      
+      // Remove after 4 seconds
+      setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+          }
+        }, 300);
+      }, 4000);
+    }
+
+    // Handle user data integration
+    function loadUserData() {
+      // This would typically load from your user data
+      // For now, we'll use the sample data structure you provided
+      const userData = {
+        userId: 1,
+        name: 'User1',
+        phone: '1234567801',
+        email: 'user1@example.com',
+        status: 'active',
+        currentPlan: 'Professional',
+        currentBilling: 'monthly',
+        nextRenewal: '2024-12-15',
+        subscriptionHistory: [
+          { date: '2024-11-15', plan: 'Professional', amount: 29.99, status: 'completed' },
+          { date: '2024-10-15', plan: 'Basic', amount: 9.99, status: 'completed' }
+        ]
+      };
+
+      // Update global variables
+      currentPlan = userData.currentPlan;
+      currentBilling = userData.currentBilling;
+
+      // Update UI
+      updateUserInterface(userData);
+    }
+
+    // Update user interface with user data
+    function updateUserInterface(userData) {
+      // Update current plan banner
+      const banner = document.querySelector('.current-plan-banner h3');
+      banner.textContent = `🎉 Currently on ${userData.currentPlan} Plan`;
+      
+      const bannerP = document.querySelector('.current-plan-banner p');
+      const plans = calculatePricing(userData.currentBilling);
+      const planData = plans[userData.currentPlan];
+      bannerP.textContent = `Your plan renews on ${userData.nextRenewal} • Next billing: ${planData.price.toFixed(2)}`;
+
+      // Update billing toggle
+      const billingRadio = document.querySelector(`input[value="${userData.currentBilling}"]`);
+      if (billingRadio) {
+        billingRadio.checked = true;
+      }
+
+      // Update sidebar user info if needed
+      const sidebarTitle = document.querySelector('.sidebar h2');
+      sidebarTitle.textContent = `${userData.name}'s Panel`;
+      
+      const sidebarDesc = document.querySelector('.sidebar p');
+      sidebarDesc.textContent = `${userData.email}`;
+    }
+
+    // Event listeners
+    document.querySelectorAll('input[name="billing"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        currentBilling = e.target.value;
+        renderPlans();
+        
+        // Show savings notification for yearly
+        if (e.target.value === 'yearly') {
+          showNotification('💰 Great choice! You\'ll save 20% with yearly billing.', 'success');
+        }
+      });
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', function(e) {
+      const sidebar = document.querySelector('.sidebar');
+      const menuBtn = document.querySelector('.mobile-menu-btn');
+      
+      if (window.innerWidth <= 768 && 
+          !sidebar.contains(e.target) && 
+          !menuBtn.contains(e.target) && 
+          sidebar.classList.contains('mobile-open')) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const sidebar = document.querySelector('.sidebar');
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('mobile-open');
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load user data (in a real app, this would fetch from your backend)
+      loadUserData();
+      renderPlans();
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+        if (window.innerWidth <= 768) {
+          closeMobileMenu();
+        }
+      }
+    });
+
+    // Handle plan analytics (for tracking user behavior)
+    function trackPlanInteraction(action, planName, billing) {
+      // This would send analytics data to your tracking service
+      console.log(`Plan interaction: ${action} - ${planName} (${billing})`);
+    }
+
+    // Add click tracking to plan cards
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('plan-button')) {
+        const planCard = e.target.closest('.plan-card');
+        const planName = planCard.querySelector('.plan-name').textContent;
+        const billing = document.querySelector('input[name="billing"]:checked').value;
+        trackPlanInteraction('button_click', planName, billing);
+      }
+    });
+  </script>
+</body>
+</html>

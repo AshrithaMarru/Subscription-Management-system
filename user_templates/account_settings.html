@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Settings</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+  body { background: #f0f2f5; color: #333; min-height: 100vh; }
+  .container { display: flex; height: 100vh; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 240px;
+    background: #1f2937;
+    color: #fff;
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar h3 { margin-bottom: 20px; font-size: 22px; }
+  .sidebar a {
+    display: block;
+    margin: 12px 0;
+    text-decoration: none;
+    color: #cbd5e1;
+    font-weight: 500;
+    padding: 8px 10px;
+    border-radius: 6px;
+    transition: 0.3s;
+    cursor: pointer;
+  }
+  .sidebar a:hover { background: #374151; color: #fff; }
+  .sidebar a.active { background: #2563eb; color: #fff; font-weight: bold; }
+
+  /* Main Content */
+  .main { flex: 1; padding: 30px 40px; overflow-y: auto; }
+  .main h2 { font-size: 28px; margin-bottom: 20px; }
+  .form-group { margin-bottom: 20px; }
+  .form-group label { display: block; margin-bottom: 6px; font-weight: 500; }
+  .form-group input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  .form-group input:disabled { background: #e5e7eb; }
+  .save-btn {
+    padding: 12px 25px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .save-btn:hover { background: #1e40af; }
+  .message { margin-top: 15px; font-weight: 500; color: #10b981; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="sidebar">
+  <h3>Admin Panel</h3>
+  <a href="dashboard.html">Dashboard</a>
+  <a href="subscription_plans.html">Subscription Plans</a>
+  <a href="billing.html">Billing History</a>
+  <a href="payments.html">Payment Methods</a>
+  <a href="account.html" class="active">Account Settings</a>
+</div>
+
+
+  <div class="main" id="main-content">
+    <h2>Account Settings</h2>
+    <div class="form-group">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" value="John Doe">
+    </div>
+    <div class="form-group">
+      <label for="email">Email Address</label>
+      <input type="email" id="email" value="john@example.com">
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" value="password123">
+    </div>
+    <button class="save-btn" onclick="saveAccountSettings()">Save Changes</button>
+    <div class="message" id="save-message"></div>
+  </div>
+</div>
+
+<script>
+  // Navigation logic
+  function navigate(section) {
+    const links = document.querySelectorAll('.sidebar a');
+    links.forEach(link => link.classList.remove('active'));
+    
+    switch(section){
+      case 'dashboard':
+        alert('Navigate to Dashboard');
+        break;
+      case 'subscription':
+        alert('Navigate to Subscription Plans');
+        break;
+      case 'billing':
+        alert('Navigate to Billing History');
+        break;
+      case 'payments':
+        alert('Navigate to Payment Methods');
+        break;
+      case 'account':
+        alert('Already on Account Settings');
+        break;
+    }
+    // Set active link
+    const activeLink = Array.from(links).find(a => a.textContent.toLowerCase().includes(section));
+    if(activeLink) activeLink.classList.add('active');
+  }
+
+  // Save account settings
+  function saveAccountSettings() {
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    // Here you can add API call to save these details
+    console.log('Saved Account Details:', {name, email, password});
+    
+    const messageDiv = document.getElementById('save-message');
+    messageDiv.textContent = 'Account details saved successfully!';
+    
+    setTimeout(() => { messageDiv.textContent = ''; }, 3000);
+  }
+</script>
+</body>
+</html>
