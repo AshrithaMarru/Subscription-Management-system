@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Billing History</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: #f8f9fb;
+      color: #1a1a1a;
+      display: flex;
+    }
+
+    /* Dark Sidebar */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+      border-right: 1px solid #374151;
+      height: 100vh;
+      padding: 24px 16px;
+      box-sizing: border-box;
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin: 0 0 8px;
+      color: #f9fafb;
+      font-weight: 600;
+    }
+
+    .sidebar p {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 24px;
+    }
+
+    .nav {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav li {
+      margin-bottom: 8px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #d1d5db;
+      font-size: 15px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .nav a:hover {
+      background: rgba(75, 85, 99, 0.5);
+      color: #f9fafb;
+      transform: translateX(2px);
+    }
+
+    .nav a.active {
+      background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+      color: #ffffff;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .nav a.active::before {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 24px;
+      background: #60a5fa;
+      border-radius: 2px;
+    }
+
+    .nav svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    .billing-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .billing-header h2 {
+      font-size: 28px;
+      margin: 0;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1f2937, #4b5563);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .billing-header p {
+      margin: 6px 0 0;
+      color: #6b7280;
+      font-size: 16px;
+    }
+
+    .download-all {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .download-all:hover {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    }
+
+    .search-filter {
+      display: flex;
+      gap: 16px;
+      margin: 24px 0;
+      align-items: center;
+    }
+
+    .search-filter input {
+      flex: 1;
+      max-width: 400px;
+      padding: 14px 18px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      outline: none;
+      font-size: 15px;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+
+    .search-filter input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .search-filter button {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .search-filter button:hover {
+      background: linear-gradient(135deg, #4f46e5, #4338ca);
+      transform: translateY(-2px);
+    }
+
+    .clear-search {
+      background: linear-gradient(135deg, #64748b, #475569);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .clear-search:hover {
+      background: linear-gradient(135deg, #475569, #334155);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 32px 0 16px 0;
+      color: #1f2937;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    th, td {
+      text-align: left;
+      padding: 16px 18px;
+      font-size: 14px;
+    }
+
+    th {
+      color: #374151;
+      border-bottom: 2px solid #f3f4f6;
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      font-weight: 600;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #f3f4f6;
+      transition: all 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+      transform: scale(1.01);
+    }
+
+    .status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .completed {
+      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+      color: #065f46;
+    }
+
+    .pending {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      color: #92400e;
+    }
+
+    .failed {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      color: #991b1b;
+    }
+
+    .pdf-link {
+      color: #3b82f6;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      display: inline-block;
+    }
+
+    .pdf-link:hover {
+      background: #eff6ff;
+      color: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6b7280;
+      font-size: 16px;
+      font-style: italic;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #6b7280;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #3b82f6;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>User Panel </h2>
+    <p>Manage your subscription</p>
+    <ul class="nav">
+      <li>
+        <a href="#">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18M3 6h18M3 18h18"></path>
+          </svg>
+          Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V7a2 2 0 0 0-2-2h-4V3H10v2H6a2 2 0 0 0-2 2v6m16 0H4m16 0v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"></path>
+          </svg>
+          Subscription Plans
+        </a>
+      </li>
+      <li>
+        <a href="#" class="active">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 14h6m-6-4h6m-7 8h8a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"></path>
+          </svg>
+          Billing History
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a5 5 0 0 0-10 0v2m-4 4h18l-1 9H4l-1-9z"></path>
+          </svg>
+          Payment Methods
+        </a>
+      </li>
+      <li>
+        <a href="#">
+          <svg fill="none" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          Account Settings
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main content -->
+  <div class="main">
+    <div class="billing-header">
+      <div>
+        <h2>Billing History</h2>
+        <p>View and download your payment history</p>
+      </div>
+      <button class="download-all" onclick="downloadAllPDF()">
+        <span>📄</span>
+        Download All PDFs
+      </button>
+    </div>
+
+    <div class="search-filter">
+      <input type="text" id="searchInput" placeholder="Search by date, description, amount, or status...">
+      <button onclick="filterPayments()">🔍 Search</button>
+      <button class="clear-search" onclick="clearSearch()">✕ Clear</button>
+    </div>
+
+    <h3 class="section-title">Payment History</h3>
+    <table id="billingTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Description</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Method</th>
+          <th>Invoice</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody">
+        <tr>
+          <td>15/12/2024 <br><small style="color: #6b7280;">16:00:00</small></td>
+          <td><strong>Professional Plan</strong><br><small style="color: #6b7280;">Monthly subscription</small></td>
+          <td><strong>$29.99 USD</strong></td>
+          <td><span class="status completed">Completed</span></td>
+          <td>Credit Card</td>
+          <td><a href="#" class="pdf-link" onclick="downloadSinglePDF('Professional Plan', '15/12/2024', '$29.99')">📄 PDF</a></td>
+        </tr>
+        <tr>
+          <td>20/11/2024 <br><small style="color: #6b7280;">14:45:00</small></td>
+          <td><strong>Basic Plan</strong><br><small style="color: #6b7280;">Monthly subscription</small></td>
+          <td><strong>$9.99 USD</strong></td>
+          <td><span class="status completed">Completed</span></td>
+          <td>Credit Card</td>
+          <td><a href="#" class="pdf-link" onclick="downloadSinglePDF('Basic Plan', '20/11/2024', '$9.99')">📄 PDF</a></td>
+        </tr>
+        <tr>
+          <td>20/10/2024 <br><small style="color: #6b7280;">09:30:00</small></td>
+          <td><strong>Enterprise Plan</strong><br><small style="color: #6b7280;">Monthly subscription</small></td>
+          <td><strong>$99.99 USD</strong></td>
+          <td><span class="status completed">Completed</span></td>
+          <td>PayPal</td>
+          <td><a href="#" class="pdf-link" onclick="downloadSinglePDF('Enterprise Plan', '20/10/2024', '$99.99')">📄 PDF</a></td>
+        </tr>
+        <tr>
+          <td>15/09/2024 <br><small style="color: #6b7280;">11:20:00</small></td>
+          <td><strong>Basic Plan</strong><br><small style="color: #6b7280;">Monthly subscription</small></td>
+          <td><strong>$9.99 USD</strong></td>
+          <td><span class="status pending">Pending</span></td>
+          <td>Credit Card</td>
+          <td><a href="#" class="pdf-link" onclick="downloadSinglePDF('Basic Plan', '15/09/2024', '$9.99')">📄 PDF</a></td>
+        </tr>
+      </tbody>
+    </table>
+    <div id="noResults" class="no-results" style="display: none;">
+      No payments found matching your search criteria.
+    </div>
+  </div>
+
+  <script>
+    // Enhanced search functionality
+    function filterPayments() {
+      const input = document.getElementById("searchInput").value.toLowerCase().trim();
+      const rows = document.querySelectorAll("#billingTable tbody tr");
+      const noResults = document.getElementById("noResults");
+      let visibleCount = 0;
+      
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const isVisible = text.includes(input);
+        row.style.display = isVisible ? "" : "none";
+        if (isVisible) visibleCount++;
+      });
+
+      // Show/hide no results message
+      noResults.style.display = visibleCount === 0 && input !== "" ? "block" : "none";
+    }
+
+    // Clear search
+    function clearSearch() {
+      document.getElementById("searchInput").value = "";
+      const rows = document.querySelectorAll("#billingTable tbody tr");
+      const noResults = document.getElementById("noResults");
+      
+      rows.forEach(row => {
+        row.style.display = "";
+      });
+      noResults.style.display = "none";
+    }
+
+    // Real-time search
+    document.getElementById("searchInput").addEventListener("input", filterPayments);
+
+    // Enter key search
+    document.getElementById("searchInput").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        filterPayments();
+      }
+    });
+
+    // Download single PDF
+    function downloadSinglePDF(plan, date, amount) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      // Add header
+      doc.setFontSize(20);
+      doc.setTextColor(40);
+      doc.text('Invoice', 20, 30);
+
+      // Add company info
+      doc.setFontSize(12);
+      doc.setTextColor(100);
+      doc.text('Your Company Name', 20, 50);
+      doc.text('123 Business Street', 20, 60);
+      doc.text('City, State 12345', 20, 70);
+      doc.text('contact@yourcompany.com', 20, 80);
+
+      // Add invoice details
+      doc.setFontSize(14);
+      doc.setTextColor(40);
+      doc.text('Invoice Details', 20, 110);
+      
+      doc.setFontSize(11);
+      doc.setTextColor(60);
+      doc.text(`Plan: ${plan}`, 20, 130);
+      doc.text(`Date: ${date}`, 20, 140);
+      doc.text(`Amount: ${amount}`, 20, 150);
+      doc.text(`Status: Completed`, 20, 160);
+      doc.text(`Payment Method: Credit Card`, 20, 170);
+
+      // Add a simple table
+      doc.autoTable({
+        startY: 190,
+        head: [['Description', 'Amount']],
+        body: [[plan + ' - Monthly Subscription', amount]],
+        theme: 'striped',
+        headStyles: { fillColor: [59, 130, 246] }
+      });
+
+      // Add footer
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(10);
+      doc.setTextColor(150);
+      doc.text('Thank you for your business!', 20, pageHeight - 20);
+
+      // Save the PDF
+      doc.save(`invoice_${plan.replace(/\s+/g, '_')}_${date.replace(/\//g, '-')}.pdf`);
+    }
+
+    // Download all PDFs as one combined document
+    function downloadAllPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Show loading state
+      const downloadBtn = document.querySelector('.download-all');
+      const originalHTML = downloadBtn.innerHTML;
+      downloadBtn.innerHTML = '<span class="spinner"></span>Generating PDF...';
+      downloadBtn.disabled = true;
+
+      setTimeout(() => {
+        // Add header
+        doc.setFontSize(24);
+        doc.setTextColor(40);
+        doc.text('Billing History Report', 20, 30);
+
+        // Add generation date
+        doc.setFontSize(12);
+        doc.setTextColor(100);
+        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 45);
+
+        // Get visible table data
+        const rows = document.querySelectorAll("#billingTable tbody tr");
+        const tableData = [];
+        
+        rows.forEach(row => {
+          if (row.style.display !== "none") {
+            const cells = row.querySelectorAll('td');
+            tableData.push([
+              cells[0].textContent.replace(/\s+/g, ' ').trim(),
+              cells[1].textContent.replace(/\s+/g, ' ').trim(),
+              cells[2].textContent.trim(),
+              cells[3].textContent.trim(),
+              cells[4].textContent.trim()
+            ]);
+          }
+        });
+
+        // Add table
+        doc.autoTable({
+          startY: 60,
+          head: [['Date', 'Description', 'Amount', 'Status', 'Method']],
+          body: tableData,
+          theme: 'striped',
+          headStyles: { 
+            fillColor: [59, 130, 246],
+            textColor: 255,
+            fontStyle: 'bold'
+          },
+          alternateRowStyles: { fillColor: [248, 250, 252] },
+          margin: { top: 60 }
+        });
+
+        // Add summary
+        const finalY = doc.lastAutoTable.finalY || 60;
+        doc.setFontSize(14);
+        doc.setTextColor(40);
+        doc.text('Summary', 20, finalY + 30);
+        
+        doc.setFontSize(11);
+        doc.setTextColor(60);
+        doc.text(`Total Transactions: ${tableData.length}`, 20, finalY + 45);
+        
+        // Calculate total amount (simplified - assumes USD)
+        let total = 0;
+        tableData.forEach(row => {
+          const amount = parseFloat(row[2].replace(/[$,]/g, ''));
+          if (!isNaN(amount)) total += amount;
+        });
+        doc.text(`Total Amount: $${total.toFixed(2)} USD`, 20, finalY + 55);
+
+        // Add footer
+        const pageHeight = doc.internal.pageSize.height;
+        doc.setFontSize(10);
+        doc.setTextColor(150);
+        doc.text('This is an automated report generated from your billing history.', 20, pageHeight - 20);
+
+        // Save the PDF
+        doc.save(`billing_history_${new Date().toISOString().split('T')[0]}.pdf`);
+
+        // Restore button
+        downloadBtn.innerHTML = originalHTML;
+        downloadBtn.disabled = false;
+      }, 1000);
+    }
+
+    // Add some sample data for demo
+    function addSampleData() {
+      // You can add more sample data here if needed
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      addSampleData();
+    });
+  </script>
+</body>
+</html>
