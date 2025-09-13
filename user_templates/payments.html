@@ -103,7 +103,7 @@
 <body>
 <div class="container">
   <div class="sidebar">
-    <h3>Admin Panel</h3>
+    <h3>User Panel</h3>
     <a href="dashboard.html">Dashboard</a>
     <a href="subscription_plans.html">Subscription Plans</a>
     <a href="billing.html">Billing History</a>
@@ -129,7 +129,6 @@
 <script>
   const payments = [
     { type: 'Paytm' },
-    { type: 'PhonePe' },
     { type: 'Google Pay' },
     { type: 'Visa' },
     { type: 'Mastercard' }
@@ -140,7 +139,6 @@
       case 'visa': return 'https://img.icons8.com/color/48/000000/visa.png';
       case 'mastercard': return 'https://img.icons8.com/color/48/000000/mastercard.png';
       case 'paytm': return 'https://img.icons8.com/color/48/000000/paytm.png';
-      case 'phonepe': return 'https://img.icons8.com/color/48/000000/phonepe.png';
       case 'google pay': return 'https://img.icons8.com/color/48/000000/google-pay-india.png';
       default: return 'https://img.icons8.com/ios-filled/50/000000/bank-card-back-side.png';
     }
