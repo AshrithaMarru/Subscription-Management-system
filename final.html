@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PageA Integration Example</title>
+  <style>
+    /* Minimal styles for integration demonstration */
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 20px;
+      background: #f0f4f8;
+      color: #1a1a1a;
+    }
+    header {
+      margin-bottom: 16px;
+    }
+    nav a {
+      margin-right: 12px;
+      text-decoration: none;
+      color: #3b82f6;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    nav a.active {
+      color: #1d4ed8;
+      text-decoration: underline;
+    }
+    main {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>PageA Integration</h1>
+  <nav>
+    <a href="#" data-page="dashboard" class="active">Dashboard</a>
+    <a href="#" data-page="subscription">Subscription Plans</a>
+    <a href="#" data-page="billing">Billing History</a>
+    <a href="#" data-page="payments">Payment Methods</a>
+    <a href="#" data-page="account">Account Settings</a>
+  </nav>
+</header>
+
+<main id="content">
+  <p>Welcome! Select a page above to load content dynamically.</p>
+</main>
+
+<script>
+  // Example integration: dynamic loading of different page content
+
+  // Simulated page modules (could be imported or fetched from server)
+  const pages = {
+    dashboard: `
+      <h2>Dashboard</h2>
+      <p>This is the dashboard overview with user stats and notifications.</p>
+      <p>Welcome back to your dashboard!</p>
+    `,
+    subscription: `
+      <h2>Subscription Plans</h2>
+      <p>Here you can review and change your subscription plans.</p>
+      <p>[Insert subscription plans UI and logic here]</p>
+    `,
+    billing: `
+      <h2>Billing History</h2>
+      <p>View your previous payments and invoices here.</p>
+      <p>[Insert billing history table and PDF download features here]</p>
+    `,
+    payments: `
+      <h2>Payment Methods</h2>
+      <p>Manage and add your payment methods here.</p>
+      <p>[Insert payment methods list and add/delete functionality here]</p>
+    `,
+    account: `
+      <h2>Account Settings</h2>
+      <p>Update your profile, email, and password on this page.</p>
+      <p>[Insert account settings form with save logic here]</p>
+    `
+  };
+
+  const navLinks = document.querySelectorAll('nav a');
+  const content = document.getElementById('content');
+
+  function loadPage(pageKey) {
+    if (pages[pageKey]) {
+      content.innerHTML = pages[pageKey];
+    } else {
+      content.innerHTML = `<p>Page not found: ${pageKey}</p>`;
+    }
+  }
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Remove active from all
+      navLinks.forEach(l => l.classList.remove('active'));
+      // Set active on clicked
+      link.classList.add('active');
+      // Load page content
+      loadPage(link.dataset.page);
+    });
+  });
+
+  // Initially load dashboard
+  loadPage('dashboard');
+</script>
+
+</body>
+</html>
